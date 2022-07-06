@@ -226,7 +226,6 @@ func (f *Farm) genPets(max, min int) {
 
 	gsteps := grows * gcols
 
-	prettyProcessOutput(grows, gcols, func(i1, i2 int) {})
 	fmt.Printf(locales[locale]["gen_farm"])
 
 	// Farm generation process with indication
@@ -276,9 +275,11 @@ func main() {
 	}
 	sort.Strings(languages)
 	for _, loc := range languages {
+		prettyProcessOutput(1, gcols, func(i, j int) {})
 		fmt.Printf(locales[loc]["choose_language"])
 		fmt.Printf(locales[loc]["languages"])
 	}
+	prettyProcessOutput(1, gcols, func(i, j int) {})
 
 	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
 	if err != nil {
