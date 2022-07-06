@@ -257,9 +257,11 @@ func genNiceOutput(grows int, gcols int, fn func(int, int)) {
 
 // Output farm detailed info
 func main() {
+
 	// Initializing
 	randS := rand.NewSource(time.Now().UnixNano())
 	randSource = rand.New(randS)
+
 	// Choose language
 	for _, loc := range []string{"en", "ua"} {
 		fmt.Printf(phrases[loc]["choose_language_string"])
@@ -271,6 +273,7 @@ func main() {
 		fmt.Println(err)
 		return
 	}
+
 	defer term.Restore(int(os.Stdin.Fd()), oldState)
 
 L:
@@ -297,7 +300,7 @@ L:
 	}
 	term.Restore(int(os.Stdin.Fd()), oldState)
 
-	//
+	// Generate and show farm
 	var farm Farm
 	farm.genPets(maxPets, minPets)
 	farm.showInfo()
