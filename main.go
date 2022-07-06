@@ -11,18 +11,20 @@ const (
 	catMinWeight    = 1
 	catMaxWeight    = 7
 	dogFoodPerMonth = 10 / 5
-	dogMinWeight    = 1
-	dogMaxWight     = 20
-	cowFoodPerMonth = 25
-	cowMinWeight    = 10
-	cowMaxWeight    = 300
-	maxPets         = 20
+	dogMinWeight    = 1.
+	dogMaxWight     = 20.
+	cowFoodPerMonth = 25.
+	cowMinWeight    = 10.
+	cowMaxWeight    = 300.
+	maxPets         = 20.
 )
 
 var (
 	locale     = "ua"
 	randSource *rand.Rand
-	petNames   = map[string]map[string]string{
+	pets       = []Pet{Dog{}, Cat{}, Cow{}}
+
+	petNames = map[string]map[string]string{
 		"en": {
 			"cat": "cat",
 			"dog": "dog",
@@ -36,10 +38,10 @@ var (
 	}
 	phrases = map[string]map[string]string{
 		"en": {
-			"whoami": "I'm a %v. I'm weighting %v kg and I need %v kg of food per month\n",
+			"whoami": "I'm a %v. I'm weighting %.2f kg and I need %v kg of food per month\n",
 		},
 		"ua": {
-			"whoami": "Я %v. Я важу %v кілограм і мені потрібно %v кілограм їжи в місяць\n",
+			"whoami": "Я %v. Я важу %.2f кілограм і мені потрібно %v кілограм їжи в місяць\n",
 		},
 	}
 )
@@ -84,6 +86,20 @@ func returnWhoAmI(t string, p Pet) string {
 
 }
 
+func genWeight(weight float64, min float64, max float64) float64 {
+	if weight == 0 {
+		return (max-min)*randSource.Float64() + min
+	}
+	if weight < min {
+		return min
+	}
+	if weight > max {
+		return max
+	}
+	return weight
+
+}
+
 // Cat declarations
 type Cat Animal
 
@@ -96,7 +112,7 @@ func (cat Cat) whoAmI() {
 }
 
 func (cat Cat) giveBirth(weight float64) Pet {
-	return Cat{weight: weight}
+	return Cat{weight: genWeight(weight, catMinWeight, catMaxWeight)}
 }
 
 func (cat Cat) Weight() float64 {
@@ -117,7 +133,8 @@ func (dog Dog) whoAmI() {
 
 func (dog Dog) giveBirth(weight float64) Pet {
 
-	return Dog{weight: weight}
+	return Dog{weight: genWeight(weight, dogMinWeight, dogMaxWight)}
+
 }
 
 func (dog Dog) Weight() float64 {
@@ -136,7 +153,7 @@ func (cow Cow) whoAmI() {
 }
 
 func (cow Cow) giveBirth(weight float64) Pet {
-	return Cow{weight: weight}
+	return Cow{weight: genWeight(weight, cowMinWeight, cowMaxWeight)}
 }
 
 func (cow Cow) Weight() float64 {
@@ -149,11 +166,9 @@ type Farm []*Pet
 func main() {
 	randS := rand.NewSource(time.Now().UnixNano())
 	randSource = rand.New(randS)
-	pets := []Pet{Dog{}, Cat{}, Cow{}}
 
 	for _, p := range pets {
-		p.giveBirth(10).whoAmI()
-
+		p.giveBirth(0).whoAmI()
 	}
 
 }
