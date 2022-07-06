@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"sort"
 	"time"
 
 	"golang.org/x/term"
@@ -24,43 +25,37 @@ const (
 )
 
 var (
-	// Apps settings
-	locale       = "en"
-	grows, gcols = 1, 80
-	sleepInt     = 50
-	randSource   *rand.Rand
+	// App`s settings
+	locale       = "en"     // default output language
+	grows, gcols = 1, 80    // row delimitor's vars
+	sleepInt     = 50       // row delimitor's average timeout in milliseconds
+	randSource   *rand.Rand // random seed
 
 	// Animals settings
 	pets = []Pet{Dog{}, Cat{}, Cow{}}
 
-	petNames = map[string]map[string]string{
+	locales = map[string]map[string]string{
 		"en": {
-			"cat": "cat",
-			"dog": "dog",
-			"cow": "cow",
+			"pet_info":        "I'm a %v. I'm weighting %.2f kg and I need %v kg of food per month\n",
+			"choose_language": "Please choose output language or exit\n",
+			"languages":       "1) English    2) Ukrainian  3) Exit\n",
+			"gen_farm":        "Generating new farm\n",
+			"ffood_info":      "Summary %v kg food per month needed \n",
+			"calc_farm_info":  "Calculating all food needed\n",
+			"cat":             "cat",
+			"dog":             "dog",
+			"cow":             "cow",
 		},
 		"ua": {
-			"cat": "кішка",
-			"dog": "пес",
-			"cow": "корова",
-		},
-	}
-	phrases = map[string]map[string]string{
-		"en": {
-			"pet_info_string":        "I'm a %v. I'm weighting %.2f kg and I need %v kg of food per month\n",
-			"choose_language_string": "Please choose output language or exit\n",
-			"languages_string":       "1) English    2) Ukrainian  3) Exit\n",
-			"gen_farm_string":        "Generating new farm\n",
-			"ffood_info_string":      "Summary %v kg food per month needed \n",
-			"calc_farm_info_string":  "Calculating all food needed\n",
-		},
-		"ua": {
-			"pet_info_string":        "Я %v. Я важу %.2f кілограм і мені потрібно %v кілограм кормів в місяць\n",
-			"choose_language_string": "Будь ласка, оберіть мову або вийти \n",
-			"languages_string":       "1) Англійська 2) Українська 3) Вийти\n",
-			"gen_farm_string":        "Генеруємо нову ферму\n",
-			"ffood_info_string":      "Загалом треба %v кілограмів кормів в місяць",
-			"calc_farm_info_string":  "Рахуємо загальну вагу кормів\n",
+			"pet_info":        "Я %v. Я важу %.2f кілограм і мені потрібно %v кілограм кормів в місяць\n",
+			"choose_language": "Будь ласка, оберіть мову або вийти \n",
+			"languages":       "1) Англійська 2) Українська 3) Вийти\n",
+			"gen_farm":        "Генеруємо нову ферму\n",
+			"ffood_info":      "Загалом треба %v кілограмів кормів в місяць \n",
+			"calc_farm_info":  "Рахуємо загальну вагу кормів\n",
+			"cat":             "кішка",
+			"dog":             "пес",
+			"cow":             "корова",
 		},
 	}
 )
@@ -92,19 +87,18 @@ type Pet interface {
 	ProCreator
 }
 
-// Return animal weight
-
 // Custom foonction of rounding food weight, int + adding 1 extra spare kg
 func foodRound(weight float64) int {
 	return int(weight) + 1
 }
 
-// Return pet_info_string string
+// Return pet_info string
 func getPetInfo(t string, p Pet) string {
-	return fmt.Sprintf(phrases[locale]["pet_info_string"], petNames[locale][t], p.Weight(), p.foodNeded())
+	return fmt.Sprintf(locales[locale]["pet_info"], locales[locale][t], p.Weight(), p.foodNeded())
 
 }
 
+// Return weight within ranges
 func genWeight(weight float64, min float64, max float64) float64 {
 	if weight == 0 {
 		return (max-min)*randSource.Float64() + min
@@ -186,20 +180,31 @@ type Farm struct {
 
 // Show farm details
 func (f *Farm) showInfo() {
+
 	gsteps := grows * gcols
+
+	// Each animal output
 	if f.Pets != nil {
 		for _, pet := range f.Pets {
 			pet.showInfo()
 		}
 	}
-	genNiceOutput(1, gcols, func(i, j int) {})
-	fmt.Printf(phrases[locale]["calc_farm_info_string"])
+
+	prettyProcessOutput(1, gcols, func(i, j int) {})
+
+	fmt.Printf(locales[locale]["calc_farm_info"])
+
+	// Calculating summary foods needed
 	var foodSum, ind int
 
-	genNiceOutput(grows, gcols, func(i, j int) {
+	prettyProcessOutput(grows, gcols, func(i, j int) {
+
 		if f.Pets != nil && len(f.Pets) > 0 {
+
 			time.Sleep(time.Millisecond * time.Duration(randSource.Intn(sleepInt)))
+
 			if (ind*100)/(len(f.Pets)) <= ((i+1)*(j+1)*100)/gsteps {
+
 				if ind < len(f.Pets) {
 					foodSum += (f.Pets)[ind].foodNeded()
 				}
@@ -209,7 +214,8 @@ func (f *Farm) showInfo() {
 
 	})
 
-	fmt.Printf(phrases[locale]["ffood_info_string"], foodSum)
+	// Return summary
+	fmt.Printf(locales[locale]["ffood_info"], foodSum)
 }
 
 // Generate random farm
@@ -220,16 +226,16 @@ func (f *Farm) genPets(max, min int) {
 
 	gsteps := grows * gcols
 
-	genNiceOutput(grows, gcols, func(i1, i2 int) {})
-	fmt.Printf(phrases[locale]["gen_farm_string"])
+	prettyProcessOutput(grows, gcols, func(i1, i2 int) {})
+	fmt.Printf(locales[locale]["gen_farm"])
 
 	// Farm generation process with indication
-
-	genNiceOutput(grows, gcols, func(i int, j int) {
+	prettyProcessOutput(grows, gcols, func(i int, j int) {
 
 		time.Sleep(time.Millisecond * time.Duration(randSource.Intn(sleepInt)))
 
 		if (len(f.Pets)*100)/numPets < ((i+1)*(j+1)*100)/gsteps {
+
 			f.Pets = append((f.Pets), pets[randSource.Intn(len(pets))].giveBirth(0))
 		}
 
@@ -237,7 +243,7 @@ func (f *Farm) genPets(max, min int) {
 
 }
 
-func genNiceOutput(grows int, gcols int, fn func(int, int)) {
+func prettyProcessOutput(grows int, gcols int, fn func(int, int)) {
 	fmt.Print("\033[s")
 
 	for i := 0; i < grows; i++ {
@@ -263,9 +269,15 @@ func main() {
 	randSource = rand.New(randS)
 
 	// Choose language
-	for _, loc := range []string{"en", "ua"} {
-		fmt.Printf(phrases[loc]["choose_language_string"])
-		fmt.Printf(phrases[loc]["languages_string"])
+	languages := []string{}
+	for loc, _ := range locales {
+		languages = append(languages, loc)
+
+	}
+	sort.Strings(languages)
+	for _, loc := range languages {
+		fmt.Printf(locales[loc]["choose_language"])
+		fmt.Printf(locales[loc]["languages"])
 	}
 
 	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
