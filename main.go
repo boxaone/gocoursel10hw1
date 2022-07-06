@@ -11,17 +11,17 @@ import (
 )
 
 const (
+	minPets         = 10
+	maxPets         = 20
 	catFoodPerMonth = 7
-	catMinWeight    = 1
-	catMaxWeight    = 7
+	catMinWeight    = 1.
+	catMaxWeight    = 7.
 	dogFoodPerMonth = 10 / 5
 	dogMinWeight    = 1.
 	dogMaxWight     = 20.
-	cowFoodPerMonth = 25.
+	cowFoodPerMonth = 25
 	cowMinWeight    = 10.
 	cowMaxWeight    = 300.
-	minPets         = 10
-	maxPets         = 20
 )
 
 var (
