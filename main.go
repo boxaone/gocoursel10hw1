@@ -18,7 +18,7 @@ const (
 	catMaxWeight    = 7.
 	dogFoodPerMonth = 10 / 5
 	dogMinWeight    = 1.
-	dogMaxWight     = 20.
+	dogMaxWeight    = 20.
 	cowFoodPerMonth = 25
 	cowMinWeight    = 10.
 	cowMaxWeight    = 300.
@@ -31,9 +31,10 @@ var (
 	sleepInt     = 50       // row delimitor's average timeout in milliseconds
 	randSource   *rand.Rand // random seed
 
-	// Animals settings
+	// Animals list
 	pets = []Pet{Dog{}, Cat{}, Cow{}}
 
+	// Locales list
 	locales = map[string]map[string]string{
 		"en": {
 			"pet_info":        "I'm a %v. I'm weighting %.2f kg and I need %v kg of food per month\n",
@@ -146,7 +147,7 @@ func (dog Dog) showInfo() {
 
 func (dog Dog) giveBirth(weight float64) Pet {
 
-	return Dog{weight: genWeight(weight, dogMinWeight, dogMaxWight)}
+	return Dog{weight: genWeight(weight, dogMinWeight, dogMaxWeight)}
 
 }
 
@@ -190,14 +191,14 @@ func (f *Farm) showInfo() {
 		}
 	}
 
-	prettyProcessOutput(1, gcols, func(i, j int) {})
+	prettyBarsProcessOutput(1, gcols, func(i, j int) {})
 
 	fmt.Printf(locales[locale]["calc_farm_info"])
 
 	// Calculating summary foods needed
 	var foodSum, ind int
 
-	prettyProcessOutput(grows, gcols, func(i, j int) {
+	prettyBarsProcessOutput(grows, gcols, func(i, j int) {
 
 		if f.Pets != nil && len(f.Pets) > 0 {
 
@@ -229,7 +230,7 @@ func (f *Farm) genPets(max, min int) {
 	fmt.Printf(locales[locale]["gen_farm"])
 
 	// Farm generation process with indication
-	prettyProcessOutput(grows, gcols, func(i int, j int) {
+	prettyBarsProcessOutput(grows, gcols, func(i int, j int) {
 
 		time.Sleep(time.Millisecond * time.Duration(randSource.Intn(sleepInt)))
 
@@ -242,7 +243,8 @@ func (f *Farm) genPets(max, min int) {
 
 }
 
-func prettyProcessOutput(grows int, gcols int, fn func(int, int)) {
+// Function for output bars during processes
+func prettyBarsProcessOutput(grows int, gcols int, fn func(int, int)) {
 	fmt.Print("\033[s")
 
 	for i := 0; i < grows; i++ {
@@ -260,7 +262,7 @@ func prettyProcessOutput(grows int, gcols int, fn func(int, int)) {
 
 }
 
-// Output farm detailed info
+// Main logic
 func main() {
 
 	// Initializing
@@ -275,11 +277,11 @@ func main() {
 	}
 	sort.Strings(languages)
 	for _, loc := range languages {
-		prettyProcessOutput(1, gcols, func(i, j int) {})
+		prettyBarsProcessOutput(1, gcols, func(i, j int) {})
 		fmt.Printf(locales[loc]["choose_language"])
 		fmt.Printf(locales[loc]["languages"])
 	}
-	prettyProcessOutput(1, gcols, func(i, j int) {})
+	prettyBarsProcessOutput(1, gcols, func(i, j int) {})
 
 	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
 	if err != nil {
@@ -289,7 +291,7 @@ func main() {
 
 	defer term.Restore(int(os.Stdin.Fd()), oldState)
 
-L:
+LANG_INPUT_LOOP:
 	for {
 
 		b := make([]byte, 1)
@@ -302,10 +304,10 @@ L:
 
 		case "1":
 			locale = "en"
-			break L
+			break LANG_INPUT_LOOP
 		case "2":
 			locale = "ua"
-			break L
+			break LANG_INPUT_LOOP
 		case "3":
 			return
 		}
