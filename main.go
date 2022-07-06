@@ -271,19 +271,24 @@ func main() {
 
 	// Choose language
 	languages := []string{}
+
 	for loc, _ := range locales {
 		languages = append(languages, loc)
 
 	}
+
 	sort.Strings(languages)
+
 	for _, loc := range languages {
 		prettyBarsProcessOutput(1, gcols, func(i, j int) {})
 		fmt.Printf(locales[loc]["choose_language"])
 		fmt.Printf(locales[loc]["languages"])
 	}
+
 	prettyBarsProcessOutput(1, gcols, func(i, j int) {})
 
 	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
+
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -291,7 +296,8 @@ func main() {
 
 	defer term.Restore(int(os.Stdin.Fd()), oldState)
 
-LANG_SELECT_LOOP:
+LANG_INPUT_LOOP:
+
 	for {
 
 		b := make([]byte, 1)
@@ -304,15 +310,16 @@ LANG_SELECT_LOOP:
 
 		case "1":
 			locale = "en"
-			break LANG_SELECT_LOOP
+			break LANG_INPUT_LOOP
 		case "2":
 			locale = "ua"
-			break LANG_SELECT_LOOP
+			break LANG_INPUT_LOOP
 		case "3":
 			return
 		}
 
 	}
+
 	term.Restore(int(os.Stdin.Fd()), oldState)
 
 	// Generate and show farm
