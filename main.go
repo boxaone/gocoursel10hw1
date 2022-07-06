@@ -291,7 +291,7 @@ func main() {
 
 	defer term.Restore(int(os.Stdin.Fd()), oldState)
 
-LANG_INPUT_LOOP:
+LANG_SELECT_LOOP:
 	for {
 
 		b := make([]byte, 1)
@@ -304,10 +304,10 @@ LANG_INPUT_LOOP:
 
 		case "1":
 			locale = "en"
-			break LANG_INPUT_LOOP
+			break LANG_SELECT_LOOP
 		case "2":
 			locale = "ua"
-			break LANG_INPUT_LOOP
+			break LANG_SELECT_LOOP
 		case "3":
 			return
 		}
