@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"golang.org/x/term"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 const (
@@ -38,24 +40,24 @@ var (
 	// Locales list
 	locales = map[string]map[string]string{
 		"en": {
-			"pet_info":        "I'm a %v. I'm weighting %.2f kg and I need %v kg of food per month.\n",
+			"pet_info":        "%v, weighting %.2f kg, needs %v kg of food per month.\n",
 			"choose_language": "Please choose output language or exit\n",
 			"language":        "English",
 			"exit":            "Exit",
 			"gen_farm":        "Generating new farm\n",
-			"ffood_info":      "Summary %v kg food per month needed.\n",
+			"ffood_info":      "Summary %v kg food per month needed for %v animals.\n",
 			"calc_farm_info":  "Calculating all food needed\n",
 			"cat":             "cat",
 			"dog":             "dog",
 			"cow":             "cow",
 		},
 		"ua": {
-			"pet_info":        "Я %v. Я важу %.2f кілограм і мені потрібно %v кілограм кормів на місяць.\n",
+			"pet_info":        "%v, важить %.2f кілограм, потребує %v кілограм кормів на місяць.\n",
 			"choose_language": "Будь ласка, оберіть мову або вийти \n",
 			"language":        "Українська",
 			"exit":            "Вийти",
 			"gen_farm":        "Генеруємо нову ферму\n",
-			"ffood_info":      "Загалом треба %v кілограмів кормів на місяць.\n",
+			"ffood_info":      "Загалом потрібно %v кілограмів кормів на місяць для %v тварин.\n",
 			"calc_farm_info":  "Рахуємо загальну вагу кормів\n",
 			"cat":             "кішка",
 			"dog":             "пес",
@@ -98,8 +100,7 @@ func foodRound(weight float64) int {
 
 // Return pet_info string
 func getPetInfo(t string, p Pet) string {
-	return fmt.Sprintf(locales[locale]["pet_info"], locales[locale][t], p.Weight(), p.foodNeded())
-
+	return fmt.Sprintf(locales[locale]["pet_info"], cases.Title(language.Und, cases.NoLower).String(locales[locale][t]), p.Weight(), p.foodNeded())
 }
 
 // Return weight within ranges
@@ -187,9 +188,12 @@ func (f *Farm) showInfo() {
 
 	gsteps := grows * gcols
 
-	// Each animal output
+	// Animals output loop
 	if f.Pets != nil {
-		for _, pet := range f.Pets {
+
+		for i, pet := range f.Pets {
+
+			fmt.Printf("%v) ", i+1)
 			pet.showInfo()
 		}
 	}
@@ -219,7 +223,7 @@ func (f *Farm) showInfo() {
 	})
 
 	// Return summary
-	fmt.Printf(locales[locale]["ffood_info"], foodSum)
+	fmt.Printf(locales[locale]["ffood_info"], foodSum, len(f.Pets))
 }
 
 // Generate random farm
