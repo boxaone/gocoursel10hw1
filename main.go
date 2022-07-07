@@ -125,7 +125,7 @@ func genWeight(weight float64, min float64, max float64) float64 {
 
 }
 
-// cat declarations
+// Cat declarations
 type cat animal
 
 func (c cat) foodNeded() int {
@@ -144,7 +144,7 @@ func (c cat) getWeight() float64 {
 	return c.weight
 }
 
-// dog declarations
+// Dog declarations
 type dog animal
 
 func (d dog) foodNeded() int {
@@ -166,7 +166,7 @@ func (d dog) getWeight() float64 {
 	return d.weight
 }
 
-// cow declarations
+// Cow declarations
 type cow animal
 
 func (c cow) foodNeded() int {
@@ -185,7 +185,7 @@ func (c cow) getWeight() float64 {
 	return c.weight
 }
 
-// farm declaration
+// Farm declaration
 type farm struct {
 	Pets []pet
 }
@@ -361,7 +361,7 @@ LANG_SELECT_LOOP:
 
 	term.Restore(int(os.Stdin.Fd()), oldState)
 
-	// Generate and show f
+	// Generate and show farm
 	var f farm
 	f.genPets(maxPets, minPets)
 	f.showInfo()
