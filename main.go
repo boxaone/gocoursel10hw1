@@ -329,7 +329,7 @@ func main() {
 
 	defer term.Restore(int(os.Stdin.Fd()), oldState)
 
-LANG_INPUT_LOOP:
+LANG_SELECT_LOOP:
 
 	for {
 
@@ -352,7 +352,7 @@ LANG_INPUT_LOOP:
 				if l <= len(languages) {
 
 					locale = languages[l-1]
-					break LANG_INPUT_LOOP
+					break LANG_SELECT_LOOP
 				}
 			}
 		}
