@@ -36,7 +36,7 @@ var (
 	randSource   *rand.Rand // random seed
 
 	// Animals list
-	pets = []Pet{Dog{}, Cat{}, Cow{}}
+	pets = []pet{dog{}, cat{}, cow{}}
 
 	// Locales list
 	locales = map[string]map[string]string{
@@ -68,30 +68,30 @@ var (
 )
 
 // Common types declarations
-type Eater interface {
+type eater interface {
 	foodNeded() int
 }
 
-type ShowInfo interface {
+type showInfo interface {
 	showInfo()
 }
 
-type PetCreator interface {
-	giveBirth(weight float64) Pet
+type petCreator interface {
+	giveBirth(weight float64) pet
 }
-type Animal struct {
+type animal struct {
 	weight float64
 }
 
-type HaveWeight interface {
+type haveWeight interface {
 	Weight() float64
 }
 
-type Pet interface {
-	HaveWeight
-	Eater
-	ShowInfo
-	PetCreator
+type pet interface {
+	haveWeight
+	eater
+	showInfo
+	petCreator
 }
 
 // Custom function of rounding food weight, int + adding 1 extra spare kg
@@ -100,7 +100,7 @@ func foodRound(weight float64) int {
 }
 
 // Return pet_info string
-func getPetInfo(t string, p Pet) string {
+func getPetInfo(t string, p pet) string {
 	output := fmt.Sprintf(locales[locale]["pet_info"], locales[locale][t], p.Weight(), p.foodNeded())
 	output_arr := strings.SplitAfterN(output, " ", 2)
 
@@ -125,73 +125,73 @@ func genWeight(weight float64, min float64, max float64) float64 {
 
 }
 
-// Cat declarations
-type Cat Animal
+// cat declarations
+type cat animal
 
-func (cat Cat) foodNeded() int {
-	return foodRound(cat.weight * catFoodPerMonth)
+func (c cat) foodNeded() int {
+	return foodRound(c.weight * catFoodPerMonth)
 }
 
-func (cat Cat) showInfo() {
-	fmt.Println(getPetInfo("cat", cat))
+func (c cat) showInfo() {
+	fmt.Println(getPetInfo("cat", c))
 }
 
-func (cat Cat) giveBirth(weight float64) Pet {
-	return Cat{weight: genWeight(weight, catMinWeight, catMaxWeight)}
+func (c cat) giveBirth(weight float64) pet {
+	return cat{weight: genWeight(weight, catMinWeight, catMaxWeight)}
 }
 
-func (cat Cat) Weight() float64 {
-	return cat.weight
+func (c cat) Weight() float64 {
+	return c.weight
 }
 
-// Dog declarations
-type Dog Animal
+// dog declarations
+type dog animal
 
-func (dog Dog) foodNeded() int {
-	return foodRound(dog.weight * dogFoodPerMonth)
+func (d dog) foodNeded() int {
+	return foodRound(d.weight * dogFoodPerMonth)
 }
 
-func (dog Dog) showInfo() {
-	fmt.Println(getPetInfo("dog", dog))
-
-}
-
-func (dog Dog) giveBirth(weight float64) Pet {
-
-	return Dog{weight: genWeight(weight, dogMinWeight, dogMaxWeight)}
+func (d dog) showInfo() {
+	fmt.Println(getPetInfo("dog", d))
 
 }
 
-func (dog Dog) Weight() float64 {
-	return dog.weight
+func (d dog) giveBirth(weight float64) pet {
+
+	return dog{weight: genWeight(weight, dogMinWeight, dogMaxWeight)}
+
 }
 
-// Cow declarations
-type Cow Animal
-
-func (cow Cow) foodNeded() int {
-	return foodRound(cow.weight * cowFoodPerMonth)
+func (d dog) Weight() float64 {
+	return d.weight
 }
 
-func (cow Cow) showInfo() {
-	fmt.Println(getPetInfo("cow", cow))
+// cow declarations
+type cow animal
+
+func (c cow) foodNeded() int {
+	return foodRound(c.weight * cowFoodPerMonth)
 }
 
-func (cow Cow) giveBirth(weight float64) Pet {
-	return Cow{weight: genWeight(weight, cowMinWeight, cowMaxWeight)}
+func (c cow) showInfo() {
+	fmt.Println(getPetInfo("cow", c))
 }
 
-func (cow Cow) Weight() float64 {
-	return cow.weight
+func (c cow) giveBirth(weight float64) pet {
+	return cow{weight: genWeight(weight, cowMinWeight, cowMaxWeight)}
 }
 
-// Farm declaration
-type Farm struct {
-	Pets []Pet
+func (c cow) Weight() float64 {
+	return c.weight
+}
+
+// farm declaration
+type farm struct {
+	Pets []pet
 }
 
 // Show farm details
-func (f *Farm) showInfo() {
+func (f *farm) showInfo() {
 
 	gsteps := grows * gcols
 
@@ -234,9 +234,9 @@ func (f *Farm) showInfo() {
 }
 
 // Generate random farm
-func (f *Farm) genPets(max, min int) {
+func (f *farm) genPets(max, min int) {
 
-	f.Pets = make([]Pet, 0, max)
+	f.Pets = make([]pet, 0, max)
 	numPets := randSource.Intn(max-min) + min
 
 	gsteps := grows * gcols
@@ -361,9 +361,9 @@ LANG_INPUT_LOOP:
 
 	term.Restore(int(os.Stdin.Fd()), oldState)
 
-	// Generate and show farm
-	var farm Farm
-	farm.genPets(maxPets, minPets)
-	farm.showInfo()
+	// Generate and show f
+	var f farm
+	f.genPets(maxPets, minPets)
+	f.showInfo()
 
 }
