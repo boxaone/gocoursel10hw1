@@ -187,7 +187,7 @@ func (c cow) getWeight() float64 {
 
 // Farm declaration
 type farm struct {
-	Pets []pet
+	pets []pet
 }
 
 // Show farm details
@@ -196,9 +196,9 @@ func (f *farm) showInfo() {
 	gsteps := grows * gcols
 
 	// Animals output loop
-	if f.Pets != nil {
+	if f.pets != nil {
 
-		for i, pet := range f.Pets {
+		for i, pet := range f.pets {
 
 			fmt.Printf("%v) ", i+1)
 			pet.showInfo()
@@ -214,14 +214,14 @@ func (f *farm) showInfo() {
 
 	prettyBarsProcessOutput(grows, gcols, func(i, j int) {
 
-		if f.Pets != nil && len(f.Pets) > 0 {
+		if f.pets != nil && len(f.pets) > 0 {
 
 			time.Sleep(time.Millisecond * time.Duration(randSource.Intn(sleepInt)))
 
-			if (ind*100)/(len(f.Pets)) <= ((i+1)*(j+1)*100)/gsteps {
+			if (ind*100)/(len(f.pets)) <= ((i+1)*(j+1)*100)/gsteps {
 
-				if ind < len(f.Pets) {
-					foodSum += (f.Pets)[ind].foodNeded()
+				if ind < len(f.pets) {
+					foodSum += (f.pets)[ind].foodNeded()
 				}
 				ind++
 			}
@@ -230,13 +230,13 @@ func (f *farm) showInfo() {
 	})
 
 	// Return summary
-	fmt.Printf(locales[locale]["ffood_info"], foodSum, len(f.Pets))
+	fmt.Printf(locales[locale]["ffood_info"], foodSum, len(f.pets))
 }
 
 // Generate random farm
 func (f *farm) genPets(max, min int) {
 
-	f.Pets = make([]pet, 0, max)
+	f.pets = make([]pet, 0, max)
 	numPets := randSource.Intn(max-min) + min
 
 	gsteps := grows * gcols
@@ -248,9 +248,9 @@ func (f *farm) genPets(max, min int) {
 
 		time.Sleep(time.Millisecond * time.Duration(randSource.Intn(sleepInt)))
 
-		if (len(f.Pets)*100)/numPets < ((i+1)*(j+1)*100)/gsteps {
+		if (len(f.pets)*100)/numPets < ((i+1)*(j+1)*100)/gsteps {
 
-			f.Pets = append((f.Pets), pets[randSource.Intn(len(pets))].giveBirth(0))
+			f.pets = append((f.pets), pets[randSource.Intn(len(pets))].giveBirth(0))
 		}
 
 	})
