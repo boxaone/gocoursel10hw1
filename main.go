@@ -280,6 +280,7 @@ func (f *farm) genPets(max, min int, conf *config) {
 
 // Manage cursor movements
 func manageCursor(commands ...string) {
+
 	for _, command := range commands {
 		switch command {
 		case "saveCursorPosition":
