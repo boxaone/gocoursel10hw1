@@ -35,7 +35,6 @@ const (
 
 type config struct {
 	locale  string // locale
-	pets    []pet  // animals seed
 	locales map[string]map[string]string
 }
 
@@ -53,8 +52,6 @@ func returnInitialConfig() *config {
 
 	conf := config{
 		locale: "en",
-
-		pets: []pet{dog{}, cat{}, cow{}},
 
 		locales: map[string]map[string]string{
 			"en": {
@@ -92,9 +89,6 @@ type eater interface {
 	foodNeded() int
 }
 
-type petCreator interface {
-	giveBirth(weight float64) pet
-}
 type animal struct {
 	weight float64
 }
@@ -109,7 +103,6 @@ type speciable interface {
 type pet interface {
 	haveWeight
 	eater
-	petCreator
 	speciable
 }
 
@@ -154,7 +147,7 @@ func (c cat) foodNeded() int {
 func (c cat) getSpecie() string {
 	return "cat"
 }
-func (c cat) giveBirth(weight float64) pet {
+func (c cat) giveBirth(weight float64) cat {
 	return cat{weight: genWeight(weight, catMinWeight, catMaxWeight)}
 }
 
@@ -172,7 +165,7 @@ func (d dog) foodNeded() int {
 func (d dog) getSpecie() string {
 	return "dog"
 }
-func (d dog) giveBirth(weight float64) pet {
+func (d dog) giveBirth(weight float64) dog {
 
 	return dog{weight: genWeight(weight, dogMinWeight, dogMaxWeight)}
 
@@ -189,7 +182,7 @@ func (c cow) foodNeded() int {
 	return foodRound(c.weight * cowFoodPerMonthPerKg)
 }
 
-func (c cow) giveBirth(weight float64) pet {
+func (c cow) giveBirth(weight float64) cow {
 	return cow{weight: genWeight(weight, cowMinWeight, cowMaxWeight)}
 }
 func (c cow) getSpecie() string {
@@ -246,6 +239,20 @@ func (f *farm) detailedInfo(conf *config) int {
 	return foodSum
 }
 
+// Get random pet
+func getRandomPet() pet {
+	switch randSource()().Intn(3) {
+	case 1:
+		return dog{}.giveBirth(0)
+
+	case 2:
+		return cat{}.giveBirth(0)
+	default:
+		return cow{}.giveBirth(0)
+
+	}
+}
+
 // Generate random farm
 func (f *farm) genPets(max, min int, conf *config) {
 	rands := randSource()()
@@ -262,8 +269,7 @@ func (f *farm) genPets(max, min int, conf *config) {
 		time.Sleep(time.Millisecond * time.Duration(rands.Intn(sleepInt)))
 
 		if (len(f.pets)*100)/numPets < ((i+1)*(j+1)*100)/gsteps {
-
-			f.pets = append((f.pets), conf.pets[rands.Intn(len(conf.pets))].giveBirth(0))
+			f.pets = append((f.pets), getRandomPet())
 		}
 
 	})
@@ -306,7 +312,7 @@ func prettyBarsProcessOutput(grows int, gcols int, fn func(int, int)) {
 
 func renderMenu(conf *config) {
 
-	// Choose language
+	// Filter languages
 	languages := []string{}
 
 	for loc, _ := range conf.locales {
@@ -321,7 +327,9 @@ func renderMenu(conf *config) {
 		fmt.Printf(conf.locales[loc]["choose_language"])
 	}
 
+	// Show delimiter
 	prettyBarsProcessOutput(1, gcols, func(i, j int) {})
+
 	// Output exits
 	fmt.Print("0) ")
 
@@ -331,7 +339,6 @@ func renderMenu(conf *config) {
 		}
 		fmt.Print(conf.locales[loc]["exit"])
 	}
-
 	fmt.Println()
 
 	// Output languages
@@ -341,19 +348,26 @@ func renderMenu(conf *config) {
 
 	prettyBarsProcessOutput(1, gcols, func(i, j int) {})
 
+	locale := processInput(&languages)
+
+	if len(locale) > 0 {
+		conf.locale = locale
+	}
+
+}
+func processInput(languages *[]string) string {
+
 	// Console manipulations
 	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
 	defer term.Restore(int(os.Stdin.Fd()), oldState)
 
-LANG_SELECT_LOOP:
-
 	for {
-
 		b := make([]byte, 1)
 		_, err = os.Stdin.Read(b)
 		if err != nil {
 			fmt.Println(err)
-			return
+			panic("Error retrieving key")
+
 		}
 
 		l, err := strconv.Atoi(string(b))
@@ -362,20 +376,19 @@ LANG_SELECT_LOOP:
 			switch l {
 
 			case 0:
-				return
+				panic("exit")
+
 			default:
 
-				if l <= len(languages) {
+				if l <= len(*languages) {
 
-					conf.locale = languages[l-1]
-					break LANG_SELECT_LOOP
+					return (*languages)[l-1]
 				}
 			}
 		}
 
 	}
-
-	term.Restore(int(os.Stdin.Fd()), oldState)
+	return ""
 }
 
 // Main logic
