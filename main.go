@@ -76,7 +76,7 @@ type ShowInfo interface {
 	showInfo()
 }
 
-type ProCreator interface {
+type PetCreator interface {
 	giveBirth(weight float64) Pet
 }
 type Animal struct {
@@ -91,7 +91,7 @@ type Pet interface {
 	HaveWeight
 	Eater
 	ShowInfo
-	ProCreator
+	PetCreator
 }
 
 // Custom function of rounding food weight, int + adding 1 extra spare kg
