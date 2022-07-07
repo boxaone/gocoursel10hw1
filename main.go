@@ -93,7 +93,7 @@ type Pet interface {
 	ProCreator
 }
 
-// Custom foonction of rounding food weight, int + adding 1 extra spare kg
+// Custom function of rounding food weight, int + adding 1 extra spare kg
 func foodRound(weight float64) int {
 	return int(weight) + 1
 }
