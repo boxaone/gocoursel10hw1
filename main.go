@@ -330,13 +330,16 @@ LANG_INPUT_LOOP:
 		}
 
 		l, err := strconv.Atoi(string(b))
+
 		if err == nil {
 			switch l {
 
 			case 0:
 				return
 			default:
+
 				if l <= len(languages) {
+
 					locale = languages[l-1]
 					break LANG_INPUT_LOOP
 				}
