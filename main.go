@@ -99,9 +99,9 @@ func foodRound(weight float64) int {
 	return int(weight) + 1
 }
 
-// Return pet_info string
-func getPetInfo(t string, p pet) string {
-	output := fmt.Sprintf(locales[locale]["pet_info"], locales[locale][t], p.getWeight(), p.foodNeded())
+// Return pet_info string. Make title from first word
+func getPetInfo(typeName string, p pet) string {
+	output := fmt.Sprintf(locales[locale]["pet_info"], locales[locale][typeName], p.getWeight(), p.foodNeded())
 	output_arr := strings.SplitAfterN(output, " ", 2)
 
 	if len(output_arr) < 2 {
