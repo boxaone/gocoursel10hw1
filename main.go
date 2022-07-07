@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"os"
 	"sort"
+	"strconv"
 	"time"
 
 	"golang.org/x/term"
@@ -39,7 +40,8 @@ var (
 		"en": {
 			"pet_info":        "I'm a %v. I'm weighting %.2f kg and I need %v kg of food per month\n",
 			"choose_language": "Please choose output language or exit\n",
-			"languages":       "1) English    2) Ukrainian  3) Exit\n",
+			"language":        "English",
+			"exit":            "Exit",
 			"gen_farm":        "Generating new farm\n",
 			"ffood_info":      "Summary %v kg food per month needed \n",
 			"calc_farm_info":  "Calculating all food needed\n",
@@ -50,7 +52,8 @@ var (
 		"ua": {
 			"pet_info":        "Я %v. Я важу %.2f кілограм і мені потрібно %v кілограм кормів в місяць\n",
 			"choose_language": "Будь ласка, оберіть мову або вийти \n",
-			"languages":       "1) Англійська 2) Українська 3) Вийти\n",
+			"language":        "Українська",
+			"exit":            "Вийти",
 			"gen_farm":        "Генеруємо нову ферму\n",
 			"ffood_info":      "Загалом треба %v кілограмів кормів в місяць \n",
 			"calc_farm_info":  "Рахуємо загальну вагу кормів\n",
@@ -282,11 +285,30 @@ func main() {
 	for _, loc := range languages {
 		prettyBarsProcessOutput(1, gcols, func(i, j int) {})
 		fmt.Printf(locales[loc]["choose_language"])
-		fmt.Printf(locales[loc]["languages"])
 	}
 
 	prettyBarsProcessOutput(1, gcols, func(i, j int) {})
 
+	// Output exits
+	fmt.Print("0) ")
+
+	for i, loc := range languages {
+		if i != 0 {
+			fmt.Print("/")
+		}
+		fmt.Print(locales[loc]["exit"])
+	}
+
+	fmt.Println()
+
+	// Output languages
+	for i, loc := range languages {
+		fmt.Printf("%v) %v\n", i+1, locales[loc]["language"])
+	}
+
+	prettyBarsProcessOutput(1, gcols, func(i, j int) {})
+
+	// Console manipulations
 	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
 
 	if err != nil {
@@ -306,16 +328,19 @@ LANG_INPUT_LOOP:
 			fmt.Println(err)
 			return
 		}
-		switch string(b) {
 
-		case "1":
-			locale = "en"
-			break LANG_INPUT_LOOP
-		case "2":
-			locale = "ua"
-			break LANG_INPUT_LOOP
-		case "3":
-			return
+		l, err := strconv.Atoi(string(b))
+		if err == nil {
+			switch l {
+
+			case 0:
+				return
+			default:
+				if l <= len(languages) {
+					locale = languages[l-1]
+					break LANG_INPUT_LOOP
+				}
+			}
 		}
 
 	}
