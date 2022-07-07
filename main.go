@@ -84,7 +84,7 @@ type animal struct {
 }
 
 type haveWeight interface {
-	Weight() float64
+	getWeight() float64
 }
 
 type pet interface {
@@ -101,7 +101,7 @@ func foodRound(weight float64) int {
 
 // Return pet_info string
 func getPetInfo(t string, p pet) string {
-	output := fmt.Sprintf(locales[locale]["pet_info"], locales[locale][t], p.Weight(), p.foodNeded())
+	output := fmt.Sprintf(locales[locale]["pet_info"], locales[locale][t], p.getWeight(), p.foodNeded())
 	output_arr := strings.SplitAfterN(output, " ", 2)
 
 	if len(output_arr) < 2 {
@@ -140,7 +140,7 @@ func (c cat) giveBirth(weight float64) pet {
 	return cat{weight: genWeight(weight, catMinWeight, catMaxWeight)}
 }
 
-func (c cat) Weight() float64 {
+func (c cat) getWeight() float64 {
 	return c.weight
 }
 
@@ -162,7 +162,7 @@ func (d dog) giveBirth(weight float64) pet {
 
 }
 
-func (d dog) Weight() float64 {
+func (d dog) getWeight() float64 {
 	return d.weight
 }
 
@@ -181,7 +181,7 @@ func (c cow) giveBirth(weight float64) pet {
 	return cow{weight: genWeight(weight, cowMinWeight, cowMaxWeight)}
 }
 
-func (c cow) Weight() float64 {
+func (c cow) getWeight() float64 {
 	return c.weight
 }
 
