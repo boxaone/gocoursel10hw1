@@ -191,7 +191,7 @@ type farm struct {
 }
 
 // Show farm details
-func (f *farm) showInfo() {
+func (f *farm) detailedInfo() int {
 
 	gsteps := grows * gcols
 
@@ -229,8 +229,7 @@ func (f *farm) showInfo() {
 
 	})
 
-	// Return summary
-	fmt.Printf(locales[locale]["ffood_info"], foodSum, len(f.pets))
+	return foodSum
 }
 
 // Generate random farm
@@ -364,6 +363,8 @@ LANG_SELECT_LOOP:
 	// Generate and show farm
 	var f farm
 	f.genPets(maxPets, minPets)
-	f.showInfo()
+	foodSum := f.detailedInfo()
 
+	// Return summary
+	fmt.Printf(locales[locale]["ffood_info"], foodSum, len(f.pets))
 }
