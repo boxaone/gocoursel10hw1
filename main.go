@@ -6,6 +6,7 @@ import (
 	"os"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"golang.org/x/term"
@@ -40,7 +41,7 @@ var (
 	// Locales list
 	locales = map[string]map[string]string{
 		"en": {
-			"pet_info":        "%v, weighting %.2f kg, needs %v kg of food per month.\n",
+			"pet_info":        "A %v, weighting %.2f kg, needs %v kg of food per month.\n",
 			"choose_language": "Please choose output language or exit\n",
 			"language":        "English",
 			"exit":            "Exit",
@@ -100,7 +101,13 @@ func foodRound(weight float64) int {
 
 // Return pet_info string
 func getPetInfo(t string, p Pet) string {
-	return fmt.Sprintf(locales[locale]["pet_info"], cases.Title(language.Und, cases.NoLower).String(locales[locale][t]), p.Weight(), p.foodNeded())
+	output := fmt.Sprintf(locales[locale]["pet_info"], locales[locale][t], p.Weight(), p.foodNeded())
+	output_arr := strings.SplitAfterN(output, " ", 2)
+
+	if len(output_arr) < 2 {
+		return output
+	}
+	return fmt.Sprint(cases.Title(language.Und, cases.NoLower).String(output_arr[0]), output_arr[1])
 }
 
 // Return weight within ranges
