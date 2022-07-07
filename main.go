@@ -15,17 +15,17 @@ import (
 )
 
 const (
-	minPets         = 10
-	maxPets         = 20
-	catFoodPerMonth = 7
-	catMinWeight    = 1.
-	catMaxWeight    = 7.
-	dogFoodPerMonth = 10 / 5
-	dogMinWeight    = 1.
-	dogMaxWeight    = 20.
-	cowFoodPerMonth = 25
-	cowMinWeight    = 10.
-	cowMaxWeight    = 300.
+	minPets              = 10
+	maxPets              = 20
+	catFoodPerMonthPerKg = 7
+	catMinWeight         = 1.
+	catMaxWeight         = 7.
+	dogFoodPerMonthPerKg = 10 / 5
+	dogMinWeight         = 1.
+	dogMaxWeight         = 20.
+	cowFoodPerMonthPerKg = 25
+	cowMinWeight         = 10.
+	cowMaxWeight         = 300.
 )
 
 var (
@@ -129,7 +129,7 @@ func genWeight(weight float64, min float64, max float64) float64 {
 type cat animal
 
 func (c cat) foodNeded() int {
-	return foodRound(c.weight * catFoodPerMonth)
+	return foodRound(c.weight * catFoodPerMonthPerKg)
 }
 
 func (c cat) showInfo() {
@@ -148,7 +148,7 @@ func (c cat) getWeight() float64 {
 type dog animal
 
 func (d dog) foodNeded() int {
-	return foodRound(d.weight * dogFoodPerMonth)
+	return foodRound(d.weight * dogFoodPerMonthPerKg)
 }
 
 func (d dog) showInfo() {
@@ -170,7 +170,7 @@ func (d dog) getWeight() float64 {
 type cow animal
 
 func (c cow) foodNeded() int {
-	return foodRound(c.weight * cowFoodPerMonth)
+	return foodRound(c.weight * cowFoodPerMonthPerKg)
 }
 
 func (c cow) showInfo() {
