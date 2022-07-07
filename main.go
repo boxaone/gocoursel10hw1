@@ -26,54 +26,70 @@ const (
 	cowFoodPerMonthPerKg = 25
 	cowMinWeight         = 10.
 	cowMaxWeight         = 300.
+	// Row delimitors'
+	gcols = 80
+	grows = 1
+	// Sleep between actions in milliseconds
+	sleepInt = 50
 )
 
-var (
-	// App`s settings
-	locale       = "en"     // default output language
-	grows, gcols = 1, 80    // row delimitor's vars
-	sleepInt     = 50       // row delimitor's average timeout in milliseconds
-	randSource   *rand.Rand // random seed
+type config struct {
+	locale  string // locale
+	pets    []pet  // animals seed
+	locales map[string]map[string]string
+}
 
-	// Animals list
-	pets = []pet{dog{}, cat{}, cow{}}
+// Return initialized rand
+func randSource() func() *rand.Rand {
 
-	// Locales list
-	locales = map[string]map[string]string{
-		"en": {
-			"pet_info":        "A %v, weighting %.2f kg, needs %v kg of food per month.\n",
-			"choose_language": "Please choose output language or choose exit\n",
-			"language":        "English",
-			"exit":            "Exit",
-			"gen_farm":        "Generating new farm\n",
-			"ffood_info":      "Summary %v kg food per month needed for %v animals.\n",
-			"calc_farm_info":  "Calculating all food needed\n",
-			"cat":             "cat",
-			"dog":             "dog",
-			"cow":             "cow",
-		},
-		"ua": {
-			"pet_info":        "%v, важить %.2f кілограм, потребує %v кілограмів кормів на місяць.\n",
-			"choose_language": "Будь ласка, оберіть мову або оберіть вихід \n",
-			"language":        "Українська",
-			"exit":            "Вихід",
-			"gen_farm":        "Генеруємо нову ферму\n",
-			"ffood_info":      "Загалом потрібно %v кілограмів кормів на місяць для %v тварин.\n",
-			"calc_farm_info":  "Рахуємо загальну вагу кормів\n",
-			"cat":             "кішка",
-			"dog":             "пес",
-			"cow":             "корова",
+	randS := rand.NewSource(time.Now().UnixNano())
+
+	return func() *rand.Rand {
+		return rand.New(randS)
+	}
+}
+
+func returnInitialConfig() *config {
+
+	conf := config{
+		locale: "en",
+
+		pets: []pet{dog{}, cat{}, cow{}},
+
+		locales: map[string]map[string]string{
+			"en": {
+				"pet_info":        "A %v, weighting %.2f kg, needs %v kg of food per month.\n",
+				"choose_language": "Please choose output language or choose exit\n",
+				"language":        "English",
+				"exit":            "Exit",
+				"gen_farm":        "Generating new farm\n",
+				"ffood_info":      "Summary %v kg food per month needed for %v animals.\n",
+				"calc_farm_info":  "Calculating all food needed\n",
+				"cat":             "cat",
+				"dog":             "dog",
+				"cow":             "cow",
+			},
+			"ua": {
+				"pet_info":        "%v, важить %.2f кілограм, потребує %v кілограмів кормів на місяць.\n",
+				"choose_language": "Будь ласка, оберіть мову або оберіть вихід \n",
+				"language":        "Українська",
+				"exit":            "Вихід",
+				"gen_farm":        "Генеруємо нову ферму\n",
+				"ffood_info":      "Загалом потрібно %v кілограмів кормів на місяць для %v тварин.\n",
+				"calc_farm_info":  "Рахуємо загальну вагу кормів\n",
+				"cat":             "кішка",
+				"dog":             "пес",
+				"cow":             "корова",
+			},
 		},
 	}
-)
+
+	return &conf
+}
 
 // Common types declarations
 type eater interface {
 	foodNeded() int
-}
-
-type showInfo interface {
-	showInfo()
 }
 
 type petCreator interface {
@@ -86,12 +102,15 @@ type animal struct {
 type haveWeight interface {
 	getWeight() float64
 }
+type speciable interface {
+	getSpecie() string
+}
 
 type pet interface {
 	haveWeight
 	eater
-	showInfo
 	petCreator
+	speciable
 }
 
 // Custom function of rounding food weight, int + adding 1 extra spare kg
@@ -100,8 +119,8 @@ func foodRound(weight float64) int {
 }
 
 // Return pet_info string. Make title from first word
-func getPetInfo(typeName string, p pet) string {
-	output := fmt.Sprintf(locales[locale]["pet_info"], locales[locale][typeName], p.getWeight(), p.foodNeded())
+func getPetInfo(pet_info string, specie string, weight float64, food int) string {
+	output := fmt.Sprintf(pet_info, specie, weight, food)
 	output_arr := strings.SplitAfterN(output, " ", 2)
 
 	if len(output_arr) < 2 {
@@ -113,7 +132,7 @@ func getPetInfo(typeName string, p pet) string {
 // Return weight within ranges
 func genWeight(weight float64, min float64, max float64) float64 {
 	if weight == 0 {
-		return (max-min)*randSource.Float64() + min
+		return (max-min)*randSource()().Float64() + min
 	}
 	if weight < min {
 		return min
@@ -132,10 +151,9 @@ func (c cat) foodNeded() int {
 	return foodRound(c.weight * catFoodPerMonthPerKg)
 }
 
-func (c cat) showInfo() {
-	fmt.Println(getPetInfo("cat", c))
+func (c cat) getSpecie() string {
+	return "cat"
 }
-
 func (c cat) giveBirth(weight float64) pet {
 	return cat{weight: genWeight(weight, catMinWeight, catMaxWeight)}
 }
@@ -151,11 +169,9 @@ func (d dog) foodNeded() int {
 	return foodRound(d.weight * dogFoodPerMonthPerKg)
 }
 
-func (d dog) showInfo() {
-	fmt.Println(getPetInfo("dog", d))
-
+func (d dog) getSpecie() string {
+	return "dog"
 }
-
 func (d dog) giveBirth(weight float64) pet {
 
 	return dog{weight: genWeight(weight, dogMinWeight, dogMaxWeight)}
@@ -173,12 +189,11 @@ func (c cow) foodNeded() int {
 	return foodRound(c.weight * cowFoodPerMonthPerKg)
 }
 
-func (c cow) showInfo() {
-	fmt.Println(getPetInfo("cow", c))
-}
-
 func (c cow) giveBirth(weight float64) pet {
 	return cow{weight: genWeight(weight, cowMinWeight, cowMaxWeight)}
+}
+func (c cow) getSpecie() string {
+	return "cow"
 }
 
 func (c cow) getWeight() float64 {
@@ -191,7 +206,7 @@ type farm struct {
 }
 
 // Show farm details
-func (f *farm) detailedInfo() int {
+func (f *farm) detailedInfo(conf *config) int {
 
 	gsteps := grows * gcols
 
@@ -200,14 +215,13 @@ func (f *farm) detailedInfo() int {
 
 		for i, pet := range f.pets {
 
-			fmt.Printf("%v) ", i+1)
-			pet.showInfo()
+			fmt.Printf("%v) %v", i+1, getPetInfo(conf.locales[conf.locale]["pet_info"], conf.locales[conf.locale][pet.getSpecie()], pet.getWeight(), pet.foodNeded()))
 		}
 	}
 
 	prettyBarsProcessOutput(1, gcols, func(i, j int) {})
 
-	fmt.Printf(locales[locale]["calc_farm_info"])
+	fmt.Printf(conf.locales[conf.locale]["calc_farm_info"])
 
 	// Calculating summary foods needed
 	var foodSum, ind int
@@ -216,7 +230,7 @@ func (f *farm) detailedInfo() int {
 
 		if f.pets != nil && len(f.pets) > 0 {
 
-			time.Sleep(time.Millisecond * time.Duration(randSource.Intn(sleepInt)))
+			time.Sleep(time.Millisecond * time.Duration(randSource()().Intn(sleepInt)))
 
 			if (ind*100)/(len(f.pets)) <= ((i+1)*(j+1)*100)/gsteps {
 
@@ -233,23 +247,23 @@ func (f *farm) detailedInfo() int {
 }
 
 // Generate random farm
-func (f *farm) genPets(max, min int) {
-
+func (f *farm) genPets(max, min int, conf *config) {
+	rands := randSource()()
 	f.pets = make([]pet, 0, max)
-	numPets := randSource.Intn(max-min) + min
+	numPets := rands.Intn(max-min) + min
 
 	gsteps := grows * gcols
 
-	fmt.Printf(locales[locale]["gen_farm"])
+	fmt.Printf(conf.locales[conf.locale]["gen_farm"])
 
 	// Farm generation process with indication
 	prettyBarsProcessOutput(grows, gcols, func(i int, j int) {
 
-		time.Sleep(time.Millisecond * time.Duration(randSource.Intn(sleepInt)))
+		time.Sleep(time.Millisecond * time.Duration(rands.Intn(sleepInt)))
 
 		if (len(f.pets)*100)/numPets < ((i+1)*(j+1)*100)/gsteps {
 
-			f.pets = append((f.pets), pets[randSource.Intn(len(pets))].giveBirth(0))
+			f.pets = append((f.pets), conf.pets[rands.Intn(len(conf.pets))].giveBirth(0))
 		}
 
 	})
@@ -290,12 +304,12 @@ func prettyBarsProcessOutput(grows int, gcols int, fn func(int, int)) {
 
 }
 
-func renderMenu() {
+func renderMenu(conf *config) {
 
 	// Choose language
 	languages := []string{}
 
-	for loc, _ := range locales {
+	for loc, _ := range conf.locales {
 		languages = append(languages, loc)
 
 	}
@@ -304,7 +318,7 @@ func renderMenu() {
 
 	for _, loc := range languages {
 		prettyBarsProcessOutput(1, gcols, func(i, j int) {})
-		fmt.Printf(locales[loc]["choose_language"])
+		fmt.Printf(conf.locales[loc]["choose_language"])
 	}
 
 	prettyBarsProcessOutput(1, gcols, func(i, j int) {})
@@ -315,14 +329,14 @@ func renderMenu() {
 		if i != 0 {
 			fmt.Print("/")
 		}
-		fmt.Print(locales[loc]["exit"])
+		fmt.Print(conf.locales[loc]["exit"])
 	}
 
 	fmt.Println()
 
 	// Output languages
 	for i, loc := range languages {
-		fmt.Printf("%v) %v\n", i+1, locales[loc]["language"])
+		fmt.Printf("%v) %v\n", i+1, conf.locales[loc]["language"])
 	}
 
 	prettyBarsProcessOutput(1, gcols, func(i, j int) {})
@@ -353,7 +367,7 @@ LANG_SELECT_LOOP:
 
 				if l <= len(languages) {
 
-					locale = languages[l-1]
+					conf.locale = languages[l-1]
 					break LANG_SELECT_LOOP
 				}
 			}
@@ -368,17 +382,16 @@ LANG_SELECT_LOOP:
 func main() {
 
 	// Initializing
-	randS := rand.NewSource(time.Now().UnixNano())
-	randSource = rand.New(randS)
+	conf := returnInitialConfig()
 
 	// renderMenu
-	renderMenu()
+	renderMenu(conf)
 
 	// Generate and show farm
 	var f farm
-	f.genPets(maxPets, minPets)
-	foodSum := f.detailedInfo()
+	f.genPets(maxPets, minPets, conf)
+	foodSum := f.detailedInfo(conf)
 
 	// Return summary
-	fmt.Printf(locales[locale]["ffood_info"], foodSum, len(f.pets))
+	fmt.Printf(conf.locales[conf.locale]["ffood_info"], foodSum, len(f.pets))
 }
