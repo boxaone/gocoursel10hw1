@@ -242,6 +242,7 @@ func (f *farm) detailedInfo(conf *config) int {
 
 // Get random pet
 func getRandomPet() pet {
+
 	switch randSource()().Intn(3) {
 	case 1:
 		return dog{}.giveBirth(0)
