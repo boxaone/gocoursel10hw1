@@ -38,24 +38,24 @@ var (
 	// Locales list
 	locales = map[string]map[string]string{
 		"en": {
-			"pet_info":        "I'm a %v. I'm weighting %.2f kg and I need %v kg of food per month\n",
+			"pet_info":        "I'm a %v. I'm weighting %.2f kg and I need %v kg of food per month.\n",
 			"choose_language": "Please choose output language or exit\n",
 			"language":        "English",
 			"exit":            "Exit",
 			"gen_farm":        "Generating new farm\n",
-			"ffood_info":      "Summary %v kg food per month needed \n",
+			"ffood_info":      "Summary %v kg food per month needed.\n",
 			"calc_farm_info":  "Calculating all food needed\n",
 			"cat":             "cat",
 			"dog":             "dog",
 			"cow":             "cow",
 		},
 		"ua": {
-			"pet_info":        "Я %v. Я важу %.2f кілограм і мені потрібно %v кілограм кормів в місяць\n",
+			"pet_info":        "Я %v. Я важу %.2f кілограм і мені потрібно %v кілограм кормів на місяць.\n",
 			"choose_language": "Будь ласка, оберіть мову або вийти \n",
 			"language":        "Українська",
 			"exit":            "Вийти",
 			"gen_farm":        "Генеруємо нову ферму\n",
-			"ffood_info":      "Загалом треба %v кілограмів кормів в місяць \n",
+			"ffood_info":      "Загалом треба %v кілограмів кормів на місяць.\n",
 			"calc_farm_info":  "Рахуємо загальну вагу кормів\n",
 			"cat":             "кішка",
 			"dog":             "пес",
