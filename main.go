@@ -202,6 +202,7 @@ type farm struct {
 func (f *farm) detailedInfo(conf *config) int {
 
 	gsteps := grows * gcols
+	rands := randSource()()
 
 	// Animals output loop
 	if f.pets != nil {
@@ -223,7 +224,7 @@ func (f *farm) detailedInfo(conf *config) int {
 
 		if f.pets != nil && len(f.pets) > 0 {
 
-			time.Sleep(time.Millisecond * time.Duration(randSource()().Intn(sleepInt)))
+			time.Sleep(time.Millisecond * time.Duration(rands.Intn(sleepInt)))
 
 			if (ind*100)/(len(f.pets)) <= ((i+1)*(j+1)*100)/gsteps {
 
