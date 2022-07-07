@@ -256,13 +256,28 @@ func (f *farm) genPets(max, min int) {
 
 }
 
+// Manage cursor movements
+func manageCursor(commands ...string) {
+	for _, command := range commands {
+		switch command {
+		case "saveCursorPosition":
+			fmt.Print("\033[s")
+		case "eraseToEndOfLine":
+			fmt.Print("\033[K")
+		case "restoreCursorPosition":
+			fmt.Print("\033[u")
+		}
+	}
+}
+
 // Function for output bars during processes
 func prettyBarsProcessOutput(grows int, gcols int, fn func(int, int)) {
-	fmt.Print("\033[s")
+
+	manageCursor("saveCursorPosition")
 
 	for i := 0; i < grows; i++ {
 
-		fmt.Print("\033[u\033[K")
+		manageCursor("restoreCursorPosition", "eraseToEndOfLine")
 
 		for j := 0; j < gcols; j++ {
 
@@ -275,12 +290,7 @@ func prettyBarsProcessOutput(grows int, gcols int, fn func(int, int)) {
 
 }
 
-// Main logic
-func main() {
-
-	// Initializing
-	randS := rand.NewSource(time.Now().UnixNano())
-	randSource = rand.New(randS)
+func renderMenu() {
 
 	// Choose language
 	languages := []string{}
@@ -298,7 +308,6 @@ func main() {
 	}
 
 	prettyBarsProcessOutput(1, gcols, func(i, j int) {})
-
 	// Output exits
 	fmt.Print("0) ")
 
@@ -320,12 +329,6 @@ func main() {
 
 	// Console manipulations
 	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
-
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
 	defer term.Restore(int(os.Stdin.Fd()), oldState)
 
 LANG_SELECT_LOOP:
@@ -359,6 +362,17 @@ LANG_SELECT_LOOP:
 	}
 
 	term.Restore(int(os.Stdin.Fd()), oldState)
+}
+
+// Main logic
+func main() {
+
+	// Initializing
+	randS := rand.NewSource(time.Now().UnixNano())
+	randSource = rand.New(randS)
+
+	// renderMenu
+	renderMenu()
 
 	// Generate and show farm
 	var f farm
