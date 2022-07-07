@@ -124,6 +124,7 @@ func getPetInfo(pet_info string, specie string, weight float64, food int) string
 
 // Return weight within ranges
 func genWeight(weight float64, min float64, max float64) float64 {
+
 	if weight == 0 {
 		return (max-min)*randSource()().Float64() + min
 	}
@@ -134,7 +135,6 @@ func genWeight(weight float64, min float64, max float64) float64 {
 		return max
 	}
 	return weight
-
 }
 
 // Cat declarations
