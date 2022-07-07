@@ -359,12 +359,25 @@ func processInput(languages *[]string) string {
 
 	// Console manipulations
 	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
-	defer term.Restore(int(os.Stdin.Fd()), oldState)
+
+	if err != nil {
+
+		fmt.Println(err)
+		panic("Error changing term to raw")
+	}
+
+	restore := func() {
+		term.Restore(int(os.Stdin.Fd()), oldState)
+	}
+
+	defer restore()
 
 	for {
 		b := make([]byte, 1)
 		_, err = os.Stdin.Read(b)
+
 		if err != nil {
+
 			fmt.Println(err)
 			panic("Error retrieving key")
 
@@ -376,7 +389,8 @@ func processInput(languages *[]string) string {
 			switch l {
 
 			case 0:
-				panic("exit")
+				restore()
+				os.Exit(0)
 
 			default:
 
