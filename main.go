@@ -42,7 +42,7 @@ var (
 	locales = map[string]map[string]string{
 		"en": {
 			"pet_info":        "A %v, weighting %.2f kg, needs %v kg of food per month.\n",
-			"choose_language": "Please choose output language or exit\n",
+			"choose_language": "Please choose output language or choose exit\n",
 			"language":        "English",
 			"exit":            "Exit",
 			"gen_farm":        "Generating new farm\n",
@@ -54,9 +54,9 @@ var (
 		},
 		"ua": {
 			"pet_info":        "%v, важить %.2f кілограм, потребує %v кілограмів кормів на місяць.\n",
-			"choose_language": "Будь ласка, оберіть мову або вийти \n",
+			"choose_language": "Будь ласка, оберіть мову або оберіть вихід \n",
 			"language":        "Українська",
-			"exit":            "Вийти",
+			"exit":            "Вихід",
 			"gen_farm":        "Генеруємо нову ферму\n",
 			"ffood_info":      "Загалом потрібно %v кілограмів кормів на місяць для %v тварин.\n",
 			"calc_farm_info":  "Рахуємо загальну вагу кормів\n",
