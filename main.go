@@ -261,7 +261,7 @@ func (f *farm) genPets(max, min int, conf *config) {
 	f.pets = make([]pet, 0, max)
 	numPets := rands.Intn(max-min) + min
 
-	gsteps := gRows * gCols
+	gSteps := gRows * gCols
 
 	fmt.Printf(conf.locales[conf.locale]["gen_farm"])
 
@@ -270,7 +270,11 @@ func (f *farm) genPets(max, min int, conf *config) {
 
 		time.Sleep(time.Millisecond * time.Duration(rands.Intn(sleepInt)))
 
-		if (len(f.pets)*100)/numPets < ((i+1)*(j+1)*100)/gsteps {
+		petsProcessedPercent := (len(f.pets) * 100) / numPets
+		stepsProcessed := (i + 1) * (j + 1)
+		stepsProcessedPercent := (stepsProcessed * 100) / gSteps
+
+		if petsProcessedPercent < stepsProcessedPercent {
 			f.pets = append((f.pets), getRandomPet())
 		}
 
