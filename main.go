@@ -264,9 +264,9 @@ func (f *farm) genPets(max, min int, conf *config) {
 	numPets := rands.Intn(max-min) + min
 	gSteps := gRows * gCols
 
+	// Farm generation process with indication
 	fmt.Printf(conf.locales[conf.locale]["gen_farm"])
 
-	// Farm generation process with indication
 	prettyBarsProcessOutput(gRows, gCols, func(i int, j int) {
 
 		// Sleep for more visual effects
