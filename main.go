@@ -199,7 +199,7 @@ type farm struct {
 }
 
 // Show farm details
-func (f *farm) detailedInfo(conf *config) int {
+func (f *farm) monthlyFarmFoodWeightDetailed(conf *config) int {
 
 	gsteps := grows * gcols
 	rands := randSource()()
@@ -420,7 +420,7 @@ func main() {
 	// Generate and show farm
 	var f farm
 	f.genPets(maxPets, minPets, conf)
-	foodSum := f.detailedInfo(conf)
+	foodSum := f.monthlyFarmFoodWeightDetailed(conf)
 
 	// Return summary
 	fmt.Printf(conf.locales[conf.locale]["ffood_info"], foodSum, len(f.pets))
