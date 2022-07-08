@@ -27,8 +27,8 @@ const (
 	cowMinWeight         = 10.
 	cowMaxWeight         = 300.
 	// Row delimitors'
-	gcols = 80
-	grows = 1
+	gCols = 80
+	gRows = 1
 	// Sleep between actions in milliseconds
 	sleepInt = 50
 )
@@ -112,14 +112,14 @@ func foodRound(weight float64) int {
 }
 
 // Return pet_info string. Make title from first word
-func getPetInfo(pet_info string, specie string, weight float64, food int) string {
-	output := fmt.Sprintf(pet_info, specie, weight, food)
-	output_arr := strings.SplitAfterN(output, " ", 2)
+func getPetInfo(petInfo string, specie string, weight float64, food int) string {
+	output := fmt.Sprintf(petInfo, specie, weight, food)
+	outputArr := strings.SplitAfterN(output, " ", 2)
 
-	if len(output_arr) < 2 {
+	if len(outputArr) < 2 {
 		return output
 	}
-	return fmt.Sprint(cases.Title(language.Und, cases.NoLower).String(output_arr[0]), output_arr[1])
+	return fmt.Sprint(cases.Title(language.Und, cases.NoLower).String(outputArr[0]), outputArr[1])
 }
 
 // Return weight within ranges
@@ -201,7 +201,7 @@ type farm struct {
 // Show farm details
 func (f *farm) monthlyFarmFoodWeightDetailed(conf *config) int {
 
-	gsteps := grows * gcols
+	gSteps := gRows * gCols
 	rands := randSource()()
 
 	// Animals output loop
@@ -213,20 +213,20 @@ func (f *farm) monthlyFarmFoodWeightDetailed(conf *config) int {
 		}
 	}
 
-	prettyBarsProcessOutput(1, gcols, func(i, j int) {})
+	prettyBarsProcessOutput(1, gCols, func(i, j int) {})
 
 	fmt.Printf(conf.locales[conf.locale]["calc_farm_info"])
 
 	// Calculating summary foods needed
 	var foodSum, ind int
 
-	prettyBarsProcessOutput(grows, gcols, func(i, j int) {
+	prettyBarsProcessOutput(gRows, gCols, func(i, j int) {
 
 		if f.pets != nil && len(f.pets) > 0 {
 
 			time.Sleep(time.Millisecond * time.Duration(rands.Intn(sleepInt)))
 
-			if (ind*100)/(len(f.pets)) <= ((i+1)*(j+1)*100)/gsteps {
+			if (ind*100)/(len(f.pets)) <= ((i+1)*(j+1)*100)/gSteps {
 
 				if ind < len(f.pets) {
 					foodSum += (f.pets)[ind].foodNeded()
@@ -261,12 +261,12 @@ func (f *farm) genPets(max, min int, conf *config) {
 	f.pets = make([]pet, 0, max)
 	numPets := rands.Intn(max-min) + min
 
-	gsteps := grows * gcols
+	gsteps := gRows * gCols
 
 	fmt.Printf(conf.locales[conf.locale]["gen_farm"])
 
 	// Farm generation process with indication
-	prettyBarsProcessOutput(grows, gcols, func(i int, j int) {
+	prettyBarsProcessOutput(gRows, gCols, func(i int, j int) {
 
 		time.Sleep(time.Millisecond * time.Duration(rands.Intn(sleepInt)))
 
@@ -326,12 +326,12 @@ func renderMenu(conf *config) {
 	sort.Strings(languages)
 
 	for _, loc := range languages {
-		prettyBarsProcessOutput(1, gcols, func(i, j int) {})
+		prettyBarsProcessOutput(1, gCols, func(i, j int) {})
 		fmt.Printf(conf.locales[loc]["choose_language"])
 	}
 
 	// Show delimiter
-	prettyBarsProcessOutput(1, gcols, func(i, j int) {})
+	prettyBarsProcessOutput(1, gCols, func(i, j int) {})
 
 	// Output exits
 	fmt.Print("0) ")
@@ -349,7 +349,7 @@ func renderMenu(conf *config) {
 		fmt.Printf("%v) %v\n", i+1, conf.locales[loc]["language"])
 	}
 
-	prettyBarsProcessOutput(1, gcols, func(i, j int) {})
+	prettyBarsProcessOutput(1, gCols, func(i, j int) {})
 
 	locale := processInput(&languages)
 
