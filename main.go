@@ -268,13 +268,17 @@ func (f *farm) genPets(max, min int, conf *config) {
 	// Farm generation process with indication
 	prettyBarsProcessOutput(gRows, gCols, func(i int, j int) {
 
+		// Sleep for more visual effects
 		time.Sleep(time.Millisecond * time.Duration(rands.Intn(sleepInt)))
 
+		// Calculating processed pets and displayed steps
 		petsProcessedPercent := (len(f.pets) * 100) / numPets
 		stepsProcessed := (i + 1) * (j + 1)
 		stepsProcessedPercent := (stepsProcessed * 100) / gSteps
 
+		// Process pet if pets percent less then steps percent
 		if petsProcessedPercent < stepsProcessedPercent {
+
 			f.pets = append((f.pets), getRandomPet())
 		}
 
