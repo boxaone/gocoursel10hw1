@@ -257,10 +257,11 @@ func getRandomPet() pet {
 
 // Generate random farm
 func (f *farm) genPets(max, min int, conf *config) {
+
+	// Initialization
 	rands := randSource()()
 	f.pets = make([]pet, 0, max)
 	numPets := rands.Intn(max-min) + min
-
 	gSteps := gRows * gCols
 
 	fmt.Printf(conf.locales[conf.locale]["gen_farm"])
