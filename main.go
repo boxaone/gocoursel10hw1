@@ -52,7 +52,6 @@ func returnInitialConfig() *config {
 
 	conf := config{
 		locale: "en",
-
 		locales: map[string]map[string]string{
 			"en": {
 				"pet_info":        "%v, weighting %.2f kg, needs %v kg of food per month.\n",
@@ -65,6 +64,7 @@ func returnInitialConfig() *config {
 				"cat":             "cat",
 				"dog":             "dog",
 				"cow":             "cow",
+				"default_name":    "Connie",
 				"usual_name":      "a %v",
 				"special_name":    "a %v named %v",
 			},
@@ -79,6 +79,7 @@ func returnInitialConfig() *config {
 				"cat":             "кішка",
 				"dog":             "пес",
 				"cow":             "корова",
+				"default_name":    "Зірочка",
 				"usual_name":      "%v",
 				"special_name":    "%v на ім'я %v",
 			},
@@ -89,23 +90,36 @@ func returnInitialConfig() *config {
 }
 
 // Common types declarations
-type eater interface {
-	foodNeded() int
+
+type weights struct {
+	foodPerMonthPerKg int
+	minWeight         float64
+	maxWeight         float64
 }
+type eater struct {
+	foodPerMonthKg float64
+	weight         float64
+}
+
+func (e eater) foodNeded() int {
+
+	return foodRound(e.weight * e.foodPerMonthKg)
+}
+
+type animalStringer func(string, string) string
 
 type animal struct {
-	weight         float64
-	name           string
-	specie         string
-	foodPerMonthKg float64
+	name     string
+	specie   string
+	stringer animalStringer
 }
 
-func (a animal) foodNeded() int {
-	return foodRound(a.weight * a.foodPerMonthKg)
+func (a animal) String() string {
+	return a.stringer(a.getName(), a.getSpecie())
 }
 
-func (a animal) getWeight() float64 {
-	return a.weight
+func (e eater) getWeight() float64 {
+	return e.weight
 }
 
 func (a animal) getSpecie() string {
@@ -121,18 +135,12 @@ func (a animal) getName() string {
 	return a.specie
 }
 
-type haveWeight interface {
+type pet interface {
+	fmt.Stringer
 	getWeight() float64
-}
-type namable interface {
 	getSpecie() string
 	getName() string
-}
-
-type pet interface {
-	haveWeight
-	eater
-	namable
+	foodNeded() int
 }
 
 // Custom function of rounding food weight, int + adding 1 extra spare kg
@@ -141,13 +149,15 @@ func foodRound(weight float64) int {
 }
 
 // Return pet_info string. Make title from first word
-func getPetInfo(petInfo string, specie string, weight float64, food int) string {
-	output := fmt.Sprintf(petInfo, specie, weight, food)
+func getPetInfo(petInfo string, specie string, weight float64, foodPerMonth int) string {
+
+	output := fmt.Sprintf(petInfo, specie, weight, foodPerMonth)
 	outputArr := strings.SplitAfterN(output, " ", 2)
 
 	if len(outputArr) < 2 {
 		return output
 	}
+
 	return fmt.Sprint(cases.Title(language.Und, cases.NoLower).String(outputArr[0]), outputArr[1])
 }
 
@@ -169,31 +179,41 @@ func genWeight(weight float64, min float64, max float64) float64 {
 // Cat declarations
 type cat struct {
 	animal
+	eater
 }
 
-func (c cat) giveBirth(weight float64, petName string) cat {
-	return cat{animal: animal{weight: genWeight(weight, catMinWeight, catMaxWeight), foodPerMonthKg: catFoodPerMonthPerKg, specie: "cat", name: petName}}
+func (c cat) giveBirth(weight float64, petName string, stringer animalStringer) cat {
+
+	return cat{eater: eater{weight: genWeight(weight, catMinWeight, catMaxWeight),
+		foodPerMonthKg: catFoodPerMonthPerKg},
+		animal: animal{specie: "cat", name: petName, stringer: stringer}}
 }
 
 // Dog declarations
 type dog struct {
 	animal
+	eater
 }
 
-func (d dog) giveBirth(weight float64, petName string) dog {
+func (d dog) giveBirth(weight float64, petName string, stringer animalStringer) dog {
 
-	return dog{animal: animal{weight: genWeight(weight, dogMinWeight, dogMaxWeight), foodPerMonthKg: dogFoodPerMonthPerKg, specie: "dog", name: petName}}
+	return dog{eater: eater{weight: genWeight(weight, dogMinWeight, dogMaxWeight),
+		foodPerMonthKg: dogFoodPerMonthPerKg},
+		animal: animal{specie: "dog", name: petName, stringer: stringer}}
 
 }
 
 // Cow declarations
 type cow struct {
 	animal
+	eater
 }
 
-func (c cow) giveBirth(weight float64, petName string) cow {
-	return cow{animal: animal{weight: genWeight(weight, cowMinWeight, cowMaxWeight), foodPerMonthKg: cowFoodPerMonthPerKg, specie: "cow", name: petName}}
+func (c cow) giveBirth(weight float64, petName string, stringer animalStringer) cow {
 
+	return cow{eater: eater{weight: genWeight(weight, cowMinWeight, cowMaxWeight),
+		foodPerMonthKg: cowFoodPerMonthPerKg},
+		animal: animal{specie: "cow", name: petName, stringer: stringer}}
 }
 
 // Farm declaration
@@ -211,18 +231,8 @@ func (f *farm) monthlyFarmFoodWeightDetailed(conf *config) int {
 	if f.pets != nil {
 
 		for i, pet := range f.pets {
-			name := pet.getName()
-			specie := conf.locales[conf.locale][pet.getSpecie()]
 
-			nameString := fmt.Sprintf(conf.locales[conf.locale]["usual_name"], specie)
-
-			if name != specie && name != pet.getSpecie() {
-
-				nameString = fmt.Sprintf(conf.locales[conf.locale]["special_name"], specie, name)
-
-			}
-
-			fmt.Printf("%v) %v", i+1, getPetInfo(conf.locales[conf.locale]["pet_info"], nameString, pet.getWeight(), pet.foodNeded()))
+			fmt.Printf("%v) %v", i+1, getPetInfo(conf.locales[conf.locale]["pet_info"], pet.String(), pet.getWeight(), pet.foodNeded()))
 		}
 	}
 
@@ -239,7 +249,12 @@ func (f *farm) monthlyFarmFoodWeightDetailed(conf *config) int {
 
 			time.Sleep(time.Millisecond * time.Duration(rands.Intn(sleepInt)))
 
-			if (ind*100)/(len(f.pets)) <= ((i+1)*(j+1)*100)/gSteps {
+			// Calculating processed pets and displayed steps
+			petsProcessedPercent := (ind * 100) / (len(f.pets))
+			stepsProcessed := (i + 1) * (j + 1)
+			stepsProcessedPercent := (stepsProcessed * 100) / gSteps
+
+			if petsProcessedPercent <= stepsProcessedPercent {
 
 				if ind < len(f.pets) {
 					foodSum += (f.pets)[ind].foodNeded()
@@ -251,21 +266,6 @@ func (f *farm) monthlyFarmFoodWeightDetailed(conf *config) int {
 	})
 
 	return foodSum
-}
-
-// Get random pet
-func getRandomPet(name string) pet {
-
-	switch randSource()().Intn(3) {
-	case 1:
-		return dog{}.giveBirth(0, name)
-
-	case 2:
-		return cat{}.giveBirth(0, name)
-	default:
-		return cow{}.giveBirth(0, name)
-
-	}
 }
 
 // Generate random farm
@@ -280,6 +280,39 @@ func (f *farm) genPets(max, min int, conf *config) {
 	// Farm generation process with indication
 	fmt.Printf(conf.locales[conf.locale]["gen_farm"])
 
+	// Realization of animal stringer
+	stringer := func(name string, specie string) string {
+
+		localizedSpecie := conf.locales[conf.locale][specie]
+
+		nameString := fmt.Sprintf(conf.locales[conf.locale]["usual_name"], specie)
+
+		if name != specie && name != localizedSpecie {
+
+			nameString = fmt.Sprintf(conf.locales[conf.locale]["special_name"], localizedSpecie, name)
+
+		}
+
+		return nameString
+
+	}
+
+	// Get random pet
+	getRandomPet := func() pet {
+
+		name := conf.locales[conf.locale]["default_name"]
+		switch rands.Intn(3) {
+		case 1:
+			return dog{}.giveBirth(0, name, stringer)
+
+		case 2:
+			return cat{}.giveBirth(0, name, stringer)
+		default:
+			return cow{}.giveBirth(0, name, stringer)
+
+		}
+	}
+
 	prettyBarsProcessOutput(gRows, gCols, func(i int, j int) {
 
 		// Sleep for more visual effects
@@ -293,7 +326,8 @@ func (f *farm) genPets(max, min int, conf *config) {
 		// Process pet if pets percent less then steps percent
 		if petsProcessedPercent < stepsProcessedPercent {
 
-			f.pets = append((f.pets), getRandomPet("Зірочка"))
+			f.pets = append((f.pets), getRandomPet())
+
 		}
 
 	})
@@ -316,7 +350,7 @@ func manageCursor(commands ...string) {
 }
 
 // Function for output bars during processes
-func prettyBarsProcessOutput(grows int, gcols int, fn func(int, int)) {
+func prettyBarsProcessOutput(grows int, gcols int, iterationFunc func(int, int)) {
 
 	manageCursor("saveCursorPosition")
 
@@ -327,7 +361,7 @@ func prettyBarsProcessOutput(grows int, gcols int, fn func(int, int)) {
 		for j := 0; j < gcols; j++ {
 
 			fmt.Print("-")
-			fn(i, j)
+			iterationFunc(i, j)
 
 		}
 	}
@@ -380,6 +414,7 @@ func renderMenu(conf *config) {
 	}
 
 }
+
 func processInput(languages *[]string) string {
 
 	// Console manipulations
